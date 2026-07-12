@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo } from "react";
 import ActivityBar from "@/components/Progress/ActivityBar";
 import CompanyWiseProgress from "@/components/Progress/comapnyWiseProgress";
 import { useProblemStore } from "@/store/problemStore";
-
 const ProgressPage = () => {
     const { solvedProblems } = useProblemStore();
     const [isMounted, setIsMounted] = useState(false);

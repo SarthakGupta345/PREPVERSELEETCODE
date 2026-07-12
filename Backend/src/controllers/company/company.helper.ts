@@ -5,13 +5,18 @@ export const problemSelect = {
     title: true,
     slug: true,
     difficulty: true,
-    frequency: true,
     acceptanceRate: true,
     link: true,
-    companies: {
+    companyProblems: {
         select: {
-            name: true,
-            slug: true,
+            frequency: true,
+            period: true,
+            company: {
+                select: {
+                    name: true,
+                    slug: true,
+                },
+            },
         },
     },
     topics: {

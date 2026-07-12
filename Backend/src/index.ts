@@ -6,9 +6,12 @@ dotenv.config()
 import companyRoutes from "./routes/company.route"
 import problemRoutes from "./routes/auth.route"
 import authRoutes from "./routes/auth.route"
+import { metricsMiddleware, metricsHandler } from "./middleware/metrics.middleware"
 
 const PORT = process.env.PORT
 const app = express()
+
+app.use(metricsMiddleware)
 
 app.use(cors({
     origin: process.env.CLIENT_URL,
@@ -17,6 +20,8 @@ app.use(cors({
 app.use(express.json({
     limit: "50mb"
 }))
+
+app.get("/metrics", metricsHandler)
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)

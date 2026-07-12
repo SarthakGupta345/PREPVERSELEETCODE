@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: prepverse-backend
+    restart: always
+    ports:
+      - "7080:7080"
+    environment:
+      - PORT=${PORT:-7080}
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - CLIENT_URL=${CLIENT_URL}
+      - LEETCODE_API_URL=${LEETCODE_API_URL}
+    networks:
+      - prepverse-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prepverse-prometheus
+    restart: always
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - prepverse-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: prepverse-grafana
+    restart: always
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+    networks:
+      - prepverse-network
+
+networks:
+  prepverse-network:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana-data:

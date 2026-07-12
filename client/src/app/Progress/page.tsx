@@ -39,7 +39,7 @@ const ProgressPage = () => {
 
             // Streak continues if solved today or yesterday
             if (solvedDates[0] === todayStr || solvedDates[0] === yesterdayStr) {
-                let currentDate = new Date(solvedDates[0]);
+                const currentDate = new Date(solvedDates[0]);
                 for (let i = 0; i < solvedDates.length; i++) {
                     const expectedStr = currentDate.toISOString().split("T")[0];
                     if (solvedDates[i] === expectedStr) {

@@ -14,6 +14,9 @@ import {
     normalizeDifficulty,
 } from "@/constants/comapnyData";
 import { useProblemStore } from "@/store/problemStore";
+import { useMe } from "@/hooks/useAuth";
+import { useCompanyProblems } from "@/hooks/useCompany";
+import { useMarkProblemDone, useMarkProblemUndone } from "@/hooks/useProblems";
 
 interface CompanyDashboardProps {
     companyData: CompanyData;
@@ -29,13 +32,8 @@ const CompanyDashboard = ({ companyData }: CompanyDashboardProps) => {
         setIsMounted(true);
     }, []);
 
-    // Create a Set of titles solved from global solvedProblems store
-    const solvedSet = useMemo(() => {
-        if (!isMounted) return new Set<string>();
-        return new Set(
-            Object.values(solvedProblems).map((p: any) => p.title)
-        );
-    }, [solvedProblems, isMounted]);
+    const { data: meData } = useMe();
+    const isLoggedIn = !!meData?.success;
 
     const [selectedDuration, setSelectedDuration] = useState("All");
     const [frequencyOrder, setFrequencyOrder] = useState<"asc" | "desc">("desc");
@@ -44,16 +42,72 @@ const CompanyDashboard = ({ companyData }: CompanyDashboardProps) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeTopic, setActiveTopic] = useState("");
 
-    // Get the active duration's records
-    const activeDuration = useMemo(
-        () => resolveDuration(companyData, selectedDuration),
-        [companyData, selectedDuration]
+    const DurationParamMap: Record<string, "30_days" | "3_months" | "6_months" | "all"> = {
+        "30 Days": "30_days",
+        "3 Months": "3_months",
+        "6 Months": "6_months",
+        "All": "all",
+    };
+
+    const { data: apiProblemsResponse } = useCompanyProblems(
+        companyName,
+        {
+            period: DurationParamMap[selectedDuration] || "all",
+            limit: 2000,
+        },
+        {
+            enabled: isMounted,
+        }
     );
 
-    const allRecords: ProblemRecord[] = useMemo(
-        () => activeDuration?.records ?? [],
-        [activeDuration]
-    );
+    const markDone = useMarkProblemDone();
+    const markUndone = useMarkProblemUndone();
+
+    // Create a Set of titles solved from global solvedProblems store
+    const solvedSet = useMemo(() => {
+        if (!isMounted) return new Set<string>();
+        return new Set(
+            Object.values(solvedProblems).map((p: any) => p.title)
+        );
+    }, [solvedProblems, isMounted]);
+
+    // Sync API solved status to Zustand store
+    useEffect(() => {
+        if (isLoggedIn && apiProblemsResponse?.success && apiProblemsResponse?.data?.problems) {
+            apiProblemsResponse.data.problems.forEach((p: any) => {
+                if (p.isSolved) {
+                    const key = p.title.toLowerCase().trim();
+                    if (!solvedProblems[key]) {
+                        toggleSolved({
+                            title: p.title,
+                            difficulty: normalizeDifficulty(p.difficulty),
+                            acceptance: p.acceptanceRate <= 1 ? p.acceptanceRate * 100 : p.acceptanceRate,
+                            frequency: p.frequency,
+                            companies: [companyName],
+                            topics: p.topics ? p.topics.map((t: any) => t.name) : [],
+                            link: p.link || "#",
+                        });
+                    }
+                }
+            });
+        }
+    }, [isLoggedIn, apiProblemsResponse, companyName, toggleSolved, solvedProblems]);
+
+    const allRecords: ProblemRecord[] = useMemo(() => {
+        if (apiProblemsResponse?.success && apiProblemsResponse?.data?.problems) {
+            return apiProblemsResponse.data.problems.map((p: any) => ({
+                id: p.id,
+                Title: p.title,
+                Difficulty: p.difficulty,
+                "Acceptance Rate": p.acceptanceRate <= 1 ? p.acceptanceRate * 100 : p.acceptanceRate,
+                Frequency: p.frequency,
+                Link: p.link,
+                companies: companyName,
+                Topics: p.topics ? p.topics.map((t: any) => t.name).join(", ") : "",
+            }));
+        }
+        return [];
+    }, [apiProblemsResponse, companyName]);
 
     // Compute difficulty stats from all records for progress bar
     const stats = useMemo(() => {
@@ -128,7 +182,7 @@ const CompanyDashboard = ({ companyData }: CompanyDashboardProps) => {
     }, [allRecords, searchQuery, activeTopic, difficultyFilter, lastSolvedFilter, frequencyOrder, solvedSet]);
 
     const handleToggleSolved = useCallback(
-        (title: string) => {
+        async (title: string) => {
             const problem = allRecords.find((r) => r.Title === title);
             if (!problem) return;
 
@@ -137,6 +191,7 @@ const CompanyDashboard = ({ companyData }: CompanyDashboardProps) => {
             const frequency = problem.Frequency ?? 0;
             const topicsList = problem.Topics ? problem.Topics.split(",").map(t => t.trim()).filter(Boolean) : [];
 
+            // Toggle in Zustand store for immediate UI response
             toggleSolved({
                 title: problem.Title,
                 difficulty,
@@ -146,8 +201,22 @@ const CompanyDashboard = ({ companyData }: CompanyDashboardProps) => {
                 topics: topicsList,
                 link: problem.Link || "#",
             });
+
+            // Sync to backend if logged in and has an id
+            if (isLoggedIn && problem.id) {
+                const isCurrentlySolved = solvedSet.has(title);
+                try {
+                    if (isCurrentlySolved) {
+                        await markUndone.mutateAsync(problem.id);
+                    } else {
+                        await markDone.mutateAsync(problem.id);
+                    }
+                } catch (error) {
+                    console.error("Failed to update problem solved status on backend:", error);
+                }
+            }
         },
-        [allRecords, companyName, toggleSolved]
+        [allRecords, companyName, toggleSolved, isLoggedIn, solvedSet, markDone, markUndone]
     );
 
     return (

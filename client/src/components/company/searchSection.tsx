@@ -9,16 +9,27 @@ import {
     ArrowDownAZ,
     ArrowUpAZ,
 } from "lucide-react";
-import companiesIndex from "@/constants/data/companiesIndex.json";
 import type { CompanyIndex } from "@/constants/comapnyData";
-
-const typedCompanies = companiesIndex as CompanyIndex[];
+import { useAllCompanies } from "@/hooks/useCompany";
 
 /* ---------------- Component ---------------- */
 
 const SearchSection = () => {
     const [search, setSearch] = useState("");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+    const { data: apiCompaniesResponse } = useAllCompanies();
+
+    const typedCompanies = useMemo<CompanyIndex[]>(() => {
+        if (apiCompaniesResponse?.success && apiCompaniesResponse?.data) {
+            return apiCompaniesResponse.data.map((c: any) => ({
+                name: c.name,
+                problems: c.problemCount,
+            }));
+        }
+        return [];
+    }, [apiCompaniesResponse]);
+
 
     const filteredCompanies = useMemo(() => {
         const filtered = typedCompanies.filter((company) =>

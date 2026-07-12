@@ -6,6 +6,7 @@ export interface CompanyProblemParams {
     difficulty?: "ALL" | "EASY" | "MEDIUM" | "HARD";
     sortBy?: "frequency" | "acceptanceRate" | "difficulty";
     order?: "asc" | "desc";
+    period?: "30_days" | "3_months" | "6_months" | "all";
 }
 
 export const getCompanyProblemsApi = async (
@@ -16,6 +17,7 @@ export const getCompanyProblemsApi = async (
         difficulty = "ALL",
         sortBy = "frequency",
         order = "desc",
+        period = "all",
     }: CompanyProblemParams = {}
 ) => {
     try {
@@ -28,6 +30,7 @@ export const getCompanyProblemsApi = async (
                     difficulty,
                     sortBy,
                     order,
+                    period,
                 },
             }
         );
@@ -50,6 +53,7 @@ export const getSolvedCompanyProblemsApi = async (
         difficulty = "ALL",
         sortBy = "frequency",
         order = "desc",
+        period = "all",
     }: CompanyProblemParams = {}
 ) => {
     try {
@@ -62,6 +66,7 @@ export const getSolvedCompanyProblemsApi = async (
                     difficulty,
                     sortBy,
                     order,
+                    period,
                 },
             }
         );
@@ -85,6 +90,7 @@ export const getUnsolvedCompanyProblemsApi = async (
         difficulty = "ALL",
         sortBy = "frequency",
         order = "desc",
+        period = "all",
     }: CompanyProblemParams = {}
 ) => {
     try {
@@ -97,6 +103,7 @@ export const getUnsolvedCompanyProblemsApi = async (
                     difficulty,
                     sortBy,
                     order,
+                    period,
                 },
             }
         );

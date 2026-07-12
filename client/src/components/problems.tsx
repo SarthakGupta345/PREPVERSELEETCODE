@@ -8,12 +8,10 @@ import {
     ChevronDown,
     Check,
 } from "lucide-react";
-import globalProblems from "@/constants/data/globalProblems.json";
 import type { GlobalProblem } from "@/constants/problemData";
 import { useFilterStore } from "@/store/filterStore";
 import { useProblemStore } from "@/store/problemStore";
-
-const problems = globalProblems as GlobalProblem[];
+import { useProblems } from "@/hooks/useProblems";
 
 /* ---------------- Styles ---------------- */
 
@@ -166,6 +164,24 @@ const ProblemCard = () => {
     useEffect(() => {
         setIsMounted(true);
     }, []);
+
+    const { data: apiProblemsResponse } = useProblems({ limit: 3000 });
+
+    const problems = useMemo<GlobalProblem[]>(() => {
+        if (apiProblemsResponse?.success && apiProblemsResponse?.data) {
+            return apiProblemsResponse.data.map((p: any) => ({
+                id: parseInt(p.id) || 0,
+                title: p.title,
+                difficulty: p.difficulty === "EASY" ? "Easy" : p.difficulty === "HARD" ? "Hard" : "Medium",
+                acceptance: p.acceptanceRate <= 1 ? p.acceptanceRate * 100 : p.acceptanceRate,
+                frequency: p.frequency,
+                companies: p.companies ? p.companies.map((c: any) => c.name) : [],
+                topics: p.topics ? p.topics.map((t: any) => t.name) : [],
+                link: p.link,
+            }));
+        }
+        return [];
+    }, [apiProblemsResponse]);
 
     // Filter, sort, and search problems client-side
     const filteredAndSortedProblems = useMemo(() => {

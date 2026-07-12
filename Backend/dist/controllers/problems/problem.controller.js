@@ -36,14 +36,14 @@ const getAllProblems = (req, res) => __awaiter(void 0, void 0, void 0, function*
             prisma_1.prisma.problem.findMany({
                 where: whereClause,
                 select: problem_helper_1.problemSelect,
-                orderBy: {
-                    [sortBy]: order,
-                },
+                orderBy: sortBy === "acceptanceRate"
+                    ? { acceptanceRate: order }
+                    : { id: "asc" },
                 skip,
                 take: limit,
             }),
         ]);
-        const problemsWithSolvedStatus = yield (0, problem_helper_1.addSolvedStatus)(problems, (_a = req.user) === null || _a === void 0 ? void 0 : _a.id);
+        const problemsWithSolvedStatus = yield (0, problem_helper_1.addSolvedStatus)((0, problem_helper_1.mapProblemData)(problems), (_a = req.user) === null || _a === void 0 ? void 0 : _a.id);
         return res.status(200).json({
             success: true,
             pagination: {
@@ -166,9 +166,9 @@ const getAllProblemsFromTopic = (req, res) => __awaiter(void 0, void 0, void 0, 
             prisma_1.prisma.problem.findMany({
                 where: whereClause,
                 select: problem_helper_1.problemSelect,
-                orderBy: {
-                    [sortBy]: order,
-                },
+                orderBy: sortBy === "acceptanceRate"
+                    ? { acceptanceRate: order }
+                    : { id: "asc" },
                 skip,
                 take: limit,
             }),
@@ -206,7 +206,7 @@ const getAllProblemsFromTopic = (req, res) => __awaiter(void 0, void 0, void 0, 
                     totalProblems,
                 hasPreviousPage: page > 1,
             },
-            data: problems.map((problem) => (Object.assign(Object.assign({}, problem), { isSolved: solvedSet.has(problem.id) }))),
+            data: (0, problem_helper_1.mapProblemData)(problems).map((problem) => (Object.assign(Object.assign({}, problem), { isSolved: solvedSet.has(problem.id) }))),
         });
     }
     catch (error) {

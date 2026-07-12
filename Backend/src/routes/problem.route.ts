@@ -1,5 +1,5 @@
 import express from "express";
-import { loginMiddleware } from "../middlewares/loginMiddleware";
+import { loginMiddleware, optionalLoginMiddleware } from "../middlewares/loginMiddleware";
 import { fetchAllTopicsAndNumberOfProblemsCount, getAllProblems, getAllProblemsFromTopic, markProblemDone, markProblemUndone } from "../controllers/problems/problem.controller";
 
 
@@ -15,6 +15,7 @@ const router = express.Router();
 // ?order=desc
 router.get(
     "/",
+    optionalLoginMiddleware,
     getAllProblems
 );
 
@@ -49,7 +50,9 @@ router.get(
 // /topics/Array/problems?page=1&limit=50
 router.get(
     "/topics/:topic/problems",
+    optionalLoginMiddleware,
     getAllProblemsFromTopic
 );
+
 
 export default router;

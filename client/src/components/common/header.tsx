@@ -35,14 +35,7 @@ const Header = () => {
 
                         <Link
                             href="/"
-                            className="
-                                flex items-center gap-1.5
-                                text-sm font-medium
-                                text-neutral-600
-                                transition
-                                hover:text-[#ffa116]
-                                dark:text-neutral-300
-                            "
+                            className="flex items-center gap-1.5 text-sm font-medium text-neutral-600 transition hover:text-[#ffa116] dark:text-neutral-300"
                         >
                             <Code2 size={16} />
                             Problems
@@ -50,14 +43,7 @@ const Header = () => {
 
                         <Link
                             href="/Company"
-                            className="
-                                flex items-center gap-1.5
-                                text-sm font-medium
-                                text-neutral-600
-                                transition
-                                hover:text-[#ffa116]
-                                dark:text-neutral-300
-                            "
+                            className="flex items-center gap-1.5 text-sm font-medium text-neutral-600 transition hover:text-[#ffa116] dark:text-neutral-300"
                         >
                             <Building2 size={16} />
                             Companies
@@ -65,14 +51,7 @@ const Header = () => {
 
                         <Link
                             href="/Progress"
-                            className="
-                                flex items-center gap-1.5
-                                text-sm font-medium
-                                text-neutral-600
-                                transition
-                                hover:text-[#ffa116]
-                                dark:text-neutral-300
-                            "
+                            className="flex items-center gap-1.5 text-sm font-medium text-neutral-600 transition hover:text-[#ffa116] dark:text-neutral-300"
                         >
                             <BarChart3 size={16} />
                             Progress
@@ -80,22 +59,12 @@ const Header = () => {
                     </nav>
                 </div>
 
-                Right Section
-               <div className="flex items-center gap-3">
+                {/* Right Section */}
+                <div className="flex items-center gap-3">
 
                     {/* Search */}
                     <button
-                        className="
-                            flex  w-85 py-2 gap-2 items-center px-3
-                            rounded-lg
-                            border border-neutral-300
-                            bg-neutral-100
-                            transition
-                            hover:bg-neutral-200
-                            dark:border-neutral-700
-                            dark:bg-neutral-800
-                            dark:hover:bg-neutral-700
-                        "
+                        className="flex w-85 py-2 gap-2 items-center px-3 rounded-lg border border-neutral-300 bg-neutral-100 transition hover:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
                     >
                         <Search
                             size={18}
@@ -103,12 +72,7 @@ const Header = () => {
                         />
                         <input type="text"
                             placeholder="Search"
-                            className="
-                            bg-transparent
-                            outline-none
-                            placeholder:text-neutral-600
-                            dark:placeholder:text-neutral-300
-                        "
+                            className="bg-transparent outline-none placeholder:text-neutral-600 dark:placeholder:text-neutral-300"
                         />
                     </button>
 
@@ -118,13 +82,7 @@ const Header = () => {
                     {/* Login */}
                     <Link
                         href="/signin"
-                        className="
-                            text-sm font-medium
-                            text-neutral-700
-                            transition
-                            hover:text-[#ffa116]
-                            dark:text-neutral-300
-                        "
+                        className="text-sm font-medium text-neutral-700 transition hover:text-[#ffa116] dark:text-neutral-300"
                     >
                         Sign in
                     </Link>
@@ -132,15 +90,7 @@ const Header = () => {
                     {/* Signup */}
                     <Link
                         href="/signup"
-                        className="
-                            rounded-lg
-                            bg-[#ffa116]
-                            px-4 py-2
-                            text-sm font-semibold
-                            text-white
-                            transition
-                            hover:bg-[#ff8f00]
-                        "
+                        className="rounded-lg bg-[#ffa116] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#ff8f00]"
                     >
                         Login
                     </Link>

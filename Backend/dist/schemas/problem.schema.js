@@ -10,7 +10,7 @@ exports.problemQuerySchema = zod_1.default.object({
     limit: zod_1.default.coerce
         .number()
         .min(1)
-        .max(100)
+        .max(4000)
         .default(50),
     difficulty: zod_1.default
         .enum(["EASY", "MEDIUM", "HARD", "ALL"])

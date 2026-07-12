@@ -38,8 +38,30 @@ exports.problemSelect = {
     },
 };
 const getCompany = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    return prisma_1.prisma.company.findUnique({
+    let company = yield prisma_1.prisma.company.findUnique({
         where: { id },
+        select: {
+            id: true,
+            name: true,
+            slug: true,
+            imageUrl: true,
+        },
+    });
+    if (company)
+        return company;
+    company = yield prisma_1.prisma.company.findUnique({
+        where: { slug: id.toLowerCase() },
+        select: {
+            id: true,
+            name: true,
+            slug: true,
+            imageUrl: true,
+        },
+    });
+    if (company)
+        return company;
+    return prisma_1.prisma.company.findUnique({
+        where: { name: id },
         select: {
             id: true,
             name: true,

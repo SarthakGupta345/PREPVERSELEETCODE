@@ -58,3 +58,16 @@ export const otpVerifyApi = async ({ email, otp }: OtpVerifyParams) => {
         };
     }
 };
+
+export const getMeApi = async () => {
+    try {
+        const response = await api.get("/auth/me");
+        return response.data;
+    } catch (error: any) {
+        return {
+            error:
+                error?.response?.data?.message ||
+                "Something went wrong",
+        };
+    }
+};

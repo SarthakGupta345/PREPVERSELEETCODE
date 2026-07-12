@@ -18,4 +18,7 @@ exports.companyProblemQuerySchema = zod_1.default.object({
     order: zod_1.default
         .enum(["asc", "desc"])
         .default("desc"),
+    period: zod_1.default
+        .enum(["30_days", "3_months", "6_months", "all"])
+        .default("all"),
 });

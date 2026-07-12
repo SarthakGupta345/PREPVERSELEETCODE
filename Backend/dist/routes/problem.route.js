@@ -13,7 +13,7 @@ const router = express_1.default.Router();
 // ?difficulty=EASY
 // ?sortBy=frequency
 // ?order=desc
-router.get("/", problem_controller_1.getAllProblems);
+router.get("/", loginMiddleware_1.optionalLoginMiddleware, problem_controller_1.getAllProblems);
 // Mark solved
 router.post("/:id/done", loginMiddleware_1.loginMiddleware, problem_controller_1.markProblemDone);
 // Mark unsolved
@@ -28,5 +28,5 @@ router.get("/topics", problem_controller_1.fetchAllTopicsAndNumberOfProblemsCoun
 // Get problems from a topic
 // Example:
 // /topics/Array/problems?page=1&limit=50
-router.get("/topics/:topic/problems", problem_controller_1.getAllProblemsFromTopic);
+router.get("/topics/:topic/problems", loginMiddleware_1.optionalLoginMiddleware, problem_controller_1.getAllProblemsFromTopic);
 exports.default = router;

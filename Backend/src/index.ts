@@ -4,7 +4,7 @@ import dotenv from "dotenv"
 dotenv.config()
 
 import companyRoutes from "./routes/company.route"
-import problemRoutes from "./routes/auth.route"
+import problemRoutes from "./routes/problem.route"
 import authRoutes from "./routes/auth.route"
 import { metricsMiddleware, metricsHandler } from "./middleware/metrics.middleware"
 

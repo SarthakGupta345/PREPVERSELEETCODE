@@ -5,14 +5,18 @@ export const problemSelect = {
     title: true,
     slug: true,
     difficulty: true,
-    frequency: true,
     acceptanceRate: true,
     link: true,
 
-    companies: {
+    companyProblems: {
         select: {
-            name: true,
-            slug: true,
+            frequency: true,
+            company: {
+                select: {
+                    name: true,
+                    slug: true,
+                },
+            },
         },
     },
 
@@ -23,6 +27,30 @@ export const problemSelect = {
         },
     },
 } as const;
+
+export const mapProblemData = (problems: any[]) => {
+    return problems.map((p: any) => {
+        const companyMap = new Map<string, { name: string; slug: string }>();
+        if (p.companyProblems) {
+            p.companyProblems.forEach((cp: any) => {
+                if (cp.company) {
+                    companyMap.set(cp.company.name, cp.company);
+                }
+            });
+        }
+        const companies = Array.from(companyMap.values());
+        const maxFrequency = p.companyProblems && p.companyProblems.length > 0
+            ? Math.max(...p.companyProblems.map((cp: any) => cp.frequency))
+            : 0.0;
+
+        const { companyProblems, ...rest } = p;
+        return {
+            ...rest,
+            companies,
+            frequency: maxFrequency,
+        };
+    });
+};
 
 
 export const addSolvedStatus = async (

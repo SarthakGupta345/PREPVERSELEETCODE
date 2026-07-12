@@ -2,7 +2,7 @@ import { AuthRequest } from "../../middlewares/loginMiddleware";
 import { Response } from "express";
 import { problemQuerySchema } from "../../schemas/problem.schema";
 import { prisma } from "../../config/prisma";
-import { addSolvedStatus, problemSelect } from "./problem.helper";
+import { addSolvedStatus, problemSelect, mapProblemData } from "./problem.helper";
 import { idSchema, topicSchema } from "../../schemas/generalSchema";
 
 
@@ -49,9 +49,9 @@ export const getAllProblems = async (
 
                     select: problemSelect,
 
-                    orderBy: {
-                        [sortBy]: order,
-                    },
+                    orderBy: sortBy === "acceptanceRate"
+                        ? { acceptanceRate: order }
+                        : { id: "asc" },
 
                     skip,
                     take: limit,
@@ -60,7 +60,7 @@ export const getAllProblems = async (
 
         const problemsWithSolvedStatus =
             await addSolvedStatus(
-                problems,
+                mapProblemData(problems),
                 req.user?.id
             );
 
@@ -229,9 +229,9 @@ export const getAllProblemsFromTopic = async (
 
                     select: problemSelect,
 
-                    orderBy: {
-                        [sortBy]: order,
-                    },
+                    orderBy: sortBy === "acceptanceRate"
+                        ? { acceptanceRate: order }
+                        : { id: "asc" },
 
                     skip,
                     take: limit,
@@ -289,7 +289,7 @@ export const getAllProblemsFromTopic = async (
                 hasPreviousPage: page > 1,
             },
 
-            data: problems.map((problem) => ({
+            data: mapProblemData(problems).map((problem) => ({
                 ...problem,
                 isSolved: solvedSet.has(problem.id),
             })),

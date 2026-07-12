@@ -16,4 +16,8 @@ export const companyProblemQuerySchema = z.object({
     order: z
         .enum(["asc", "desc"])
         .default("desc"),
+
+    period: z
+        .enum(["30_days", "3_months", "6_months", "all"])
+        .default("all"),
 });

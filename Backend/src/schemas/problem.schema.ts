@@ -6,7 +6,7 @@ export const problemQuerySchema = z.object({
     limit: z.coerce
         .number()
         .min(1)
-        .max(100)
+        .max(4000)
         .default(50),
 
     difficulty: z

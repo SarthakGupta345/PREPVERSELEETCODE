@@ -1,17 +1,24 @@
 import express from "express";
 
 
-import { loginMiddleware } from "../middlewares/loginMiddleware";
-import { getAllCompanyNameandNumberofproblems, getAllProblemsFromCompany, getAllUnsolvedProblemFromCompany, getSolvedProblemFromCompany } from "../controllers/company/company.controller";
+import { loginMiddleware, optionalLoginMiddleware } from "../middlewares/loginMiddleware";
+import { getAllCompanyNameandNumberofproblems, getAllProblemsFromCompany, getAllUnsolvedProblemFromCompany, getSolvedProblemFromCompany, getCompanyDetails } from "../controllers/company/company.controller";
 
 const router = express.Router();
+
+// Company details
+router.get(
+    "/:id",
+    getCompanyDetails
+);
 
 // All company problems
 router.get(
     "/:id/problems",
-    loginMiddleware,
+    optionalLoginMiddleware,
     getAllProblemsFromCompany
 );
+
 
 // Solved company problems
 router.get(

@@ -6,6 +6,8 @@ import { loginSchema, profileSchema } from "../schemas/profile.schema"
 import { axiosInstance } from "../config/axios"
 import "dotenv/config"
 import { AuthRequest } from "../middlewares/loginMiddleware"
+import * as jwt from "jsonwebtoken"
+
 
 
 export const signup = async (
@@ -140,10 +142,18 @@ export const login = async (req: Request, res: Response) => {
             })
         }
 
-        const token = res.cookie("token", {
-            id: user.id,
-            email: user.email
-        }, {
+        const secret = process.env.JWT_SECRET_KEY
+        if (!secret) {
+            throw new Error("JWT secret key is not defined")
+        }
+
+        const token = jwt.sign(
+            { id: user.id, email: user.email },
+            secret,
+            { expiresIn: "24h" }
+        )
+
+        res.cookie("token", token, {
             httpOnly: true,
             sameSite: "none",
             secure: true,

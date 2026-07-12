@@ -20,7 +20,7 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllCompanyNameandNumberofproblems = exports.getAllUnsolvedProblemFromCompany = exports.getSolvedProblemFromCompany = exports.getAllProblemsFromCompany = void 0;
+exports.getCompanyDetails = exports.getAllCompanyNameandNumberofproblems = exports.getAllUnsolvedProblemFromCompany = exports.getSolvedProblemFromCompany = exports.getAllProblemsFromCompany = void 0;
 const prisma_1 = require("../../config/prisma");
 const company_schema_1 = require("../../schemas/company.schema");
 const company_helper_1 = require("./company.helper");
@@ -42,7 +42,7 @@ const getAllProblemsFromCompany = (req, res) => __awaiter(void 0, void 0, void 0
             });
         }
         const { id } = companyResult.data;
-        const { difficulty, sortBy, order } = queryResult.data;
+        const { difficulty, sortBy, order, period } = queryResult.data;
         const company = yield (0, company_helper_1.getCompany)(id);
         if (!company) {
             return res.status(404).json({
@@ -50,10 +50,16 @@ const getAllProblemsFromCompany = (req, res) => __awaiter(void 0, void 0, void 0
                 message: "Company not found",
             });
         }
+        const PeriodMapping = {
+            "30_days": "THIRTY_DAYS",
+            "3_months": "THREE_MONTHS",
+            "6_months": "SIX_MONTHS",
+            "all": "ALL_TIME",
+        };
         const whereClause = Object.assign({ companyProblems: {
-                some: {
-                    companyId: company.id,
-                },
+                some: Object.assign({ companyId: company.id }, (period !== "all" && {
+                    period: PeriodMapping[period],
+                })),
             } }, (difficulty !== "ALL" && {
             difficulty,
         }));
@@ -85,7 +91,8 @@ const getAllProblemsFromCompany = (req, res) => __awaiter(void 0, void 0, void 0
                 totalProblems: problems.length,
                 problems: problems.map((problem) => {
                     const { companyProblems } = problem, rest = __rest(problem, ["companyProblems"]);
-                    const cpForCompany = companyProblems.find((cp) => cp.company.slug === company.slug);
+                    const cpForCompany = companyProblems.find((cp) => cp.company.slug === company.slug &&
+                        (period === "all" || cp.period === PeriodMapping[period]));
                     const frequency = cpForCompany ? cpForCompany.frequency : 0;
                     const companies = companyProblems.map((cp) => cp.company);
                     return Object.assign(Object.assign({}, rest), { frequency,
@@ -128,7 +135,7 @@ const getSolvedProblemFromCompany = (req, res) => __awaiter(void 0, void 0, void
             });
         }
         const { id } = companyResult.data;
-        const { difficulty, sortBy, order } = queryResult.data;
+        const { difficulty, sortBy, order, period } = queryResult.data;
         const company = yield (0, company_helper_1.getCompany)(id);
         if (!company) {
             return res.status(404).json({
@@ -136,13 +143,19 @@ const getSolvedProblemFromCompany = (req, res) => __awaiter(void 0, void 0, void
                 message: "Company not found",
             });
         }
+        const PeriodMapping = {
+            "30_days": "THIRTY_DAYS",
+            "3_months": "THREE_MONTHS",
+            "6_months": "SIX_MONTHS",
+            "all": "ALL_TIME",
+        };
         const solvedProblems = yield prisma_1.prisma.solvedProblem.findMany({
             where: {
                 userId,
                 problem: Object.assign({ companyProblems: {
-                        some: {
-                            companyId: company.id,
-                        },
+                        some: Object.assign({ companyId: company.id }, (period !== "all" && {
+                            period: PeriodMapping[period],
+                        })),
                     } }, (difficulty !== "ALL" && {
                     difficulty,
                 })),
@@ -156,7 +169,8 @@ const getSolvedProblemFromCompany = (req, res) => __awaiter(void 0, void 0, void
         });
         let problems = solvedProblems.map((sp) => {
             const _a = sp.problem, { companyProblems } = _a, rest = __rest(_a, ["companyProblems"]);
-            const cpForCompany = companyProblems.find((cp) => cp.company.slug === company.slug);
+            const cpForCompany = companyProblems.find((cp) => cp.company.slug === company.slug &&
+                (period === "all" || cp.period === PeriodMapping[period]));
             const frequency = cpForCompany ? cpForCompany.frequency : 0;
             const companies = companyProblems.map((cp) => cp.company);
             return Object.assign(Object.assign({}, rest), { frequency,
@@ -222,7 +236,7 @@ const getAllUnsolvedProblemFromCompany = (req, res) => __awaiter(void 0, void 0,
             });
         }
         const { id } = companyResult.data;
-        const { difficulty, sortBy, order } = queryResult.data;
+        const { difficulty, sortBy, order, period } = queryResult.data;
         const company = yield (0, company_helper_1.getCompany)(id);
         if (!company) {
             return res.status(404).json({
@@ -230,11 +244,17 @@ const getAllUnsolvedProblemFromCompany = (req, res) => __awaiter(void 0, void 0,
                 message: "Company not found",
             });
         }
+        const PeriodMapping = {
+            "30_days": "THIRTY_DAYS",
+            "3_months": "THREE_MONTHS",
+            "6_months": "SIX_MONTHS",
+            "all": "ALL_TIME",
+        };
         const problems = yield prisma_1.prisma.problem.findMany({
             where: Object.assign(Object.assign({ companyProblems: {
-                    some: {
-                        companyId: company.id,
-                    },
+                    some: Object.assign({ companyId: company.id }, (period !== "all" && {
+                        period: PeriodMapping[period],
+                    })),
                 } }, (difficulty !== "ALL" && {
                 difficulty,
             })), { solvedBy: {
@@ -252,7 +272,8 @@ const getAllUnsolvedProblemFromCompany = (req, res) => __awaiter(void 0, void 0,
                 totalUnsolved: problems.length,
                 problems: problems.map((problem) => {
                     const { companyProblems } = problem, rest = __rest(problem, ["companyProblems"]);
-                    const cpForCompany = companyProblems.find((cp) => cp.company.slug === company.slug);
+                    const cpForCompany = companyProblems.find((cp) => cp.company.slug === company.slug &&
+                        (period === "all" || cp.period === PeriodMapping[period]));
                     const frequency = cpForCompany ? cpForCompany.frequency : 0;
                     const companies = companyProblems.map((cp) => cp.company);
                     return Object.assign(Object.assign({}, rest), { frequency,
@@ -305,3 +326,64 @@ const getAllCompanyNameandNumberofproblems = (req, res) => __awaiter(void 0, voi
     }
 });
 exports.getAllCompanyNameandNumberofproblems = getAllCompanyNameandNumberofproblems;
+const getCompanyDetails = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const companyResult = company_schema_1.companyIdSchema.safeParse(req.params);
+        if (!companyResult.success) {
+            return res.status(400).json({
+                success: false,
+                errors: companyResult.error.flatten().fieldErrors,
+            });
+        }
+        const { id } = companyResult.data;
+        const company = yield (0, company_helper_1.getCompany)(id);
+        if (!company) {
+            return res.status(404).json({
+                success: false,
+                message: "Company not found",
+            });
+        }
+        // Count total unique problems across all durations for this company
+        const totalProblems = yield prisma_1.prisma.companyProblem.count({
+            where: {
+                companyId: company.id,
+            },
+        });
+        // Get unique periods available in the database for this company
+        const periods = yield prisma_1.prisma.companyProblem.findMany({
+            where: {
+                companyId: company.id,
+            },
+            select: {
+                period: true,
+            },
+            distinct: ["period"],
+        });
+        const periodMappingReverse = {
+            THIRTY_DAYS: "30_days",
+            THREE_MONTHS: "3_months",
+            SIX_MONTHS: "6_months",
+            ALL_TIME: "all",
+        };
+        const durationsAvailable = periods.map(p => periodMappingReverse[p.period]).filter(Boolean);
+        return res.status(200).json({
+            success: true,
+            data: {
+                id: company.id,
+                company: company.name,
+                slug: company.slug,
+                imageUrl: company.imageUrl,
+                total_records_across_durations: totalProblems,
+                durations_available: durationsAvailable,
+            },
+        });
+    }
+    catch (error) {
+        console.error("[getCompanyDetails]", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+});
+exports.getCompanyDetails = getCompanyDetails;

@@ -42,13 +42,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loginMiddleware = void 0;
+exports.optionalLoginMiddleware = exports.loginMiddleware = void 0;
 const jwt = __importStar(require("jsonwebtoken"));
 const prisma_1 = require("../config/prisma");
 const loginMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const token = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.token;
+        let token = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.token;
+        if (!token && req.headers.cookie) {
+            const cookies = req.headers.cookie.split(";").reduce((acc, cookie) => {
+                const [key, value] = cookie.split("=");
+                if (key)
+                    acc[key.trim()] = value ? value.trim() : "";
+                return acc;
+            }, {});
+            token = cookies.token;
+        }
+        if (!token && req.headers.authorization) {
+            const parts = req.headers.authorization.split(" ");
+            if (parts.length === 2 && parts[0] === "Bearer") {
+                token = parts[1];
+            }
+        }
         if (!token) {
             return res.status(401).json({
                 success: false,
@@ -91,3 +106,50 @@ const loginMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.loginMiddleware = loginMiddleware;
+const optionalLoginMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        let token = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.token;
+        if (!token && req.headers.cookie) {
+            const cookies = req.headers.cookie.split(";").reduce((acc, cookie) => {
+                const [key, value] = cookie.split("=");
+                if (key)
+                    acc[key.trim()] = value ? value.trim() : "";
+                return acc;
+            }, {});
+            token = cookies.token;
+        }
+        if (!token && req.headers.authorization) {
+            const parts = req.headers.authorization.split(" ");
+            if (parts.length === 2 && parts[0] === "Bearer") {
+                token = parts[1];
+            }
+        }
+        if (!token) {
+            return next();
+        }
+        const secret = process.env.JWT_SECRET_KEY;
+        if (!secret) {
+            return next();
+        }
+        const decoded = jwt.verify(token, secret);
+        if (!(decoded === null || decoded === void 0 ? void 0 : decoded.id)) {
+            return next();
+        }
+        const user = yield prisma_1.prisma.user.findUnique({
+            where: { id: decoded.id },
+            select: {
+                id: true,
+                email: true,
+            },
+        });
+        if (user) {
+            req.user = user;
+        }
+        next();
+    }
+    catch (error) {
+        next();
+    }
+});
+exports.optionalLoginMiddleware = optionalLoginMiddleware;

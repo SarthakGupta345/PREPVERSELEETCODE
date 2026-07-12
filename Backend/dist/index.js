@@ -8,8 +8,8 @@ const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const company_route_1 = __importDefault(require("./routes/company.route"));
+const problem_route_1 = __importDefault(require("./routes/problem.route"));
 const auth_route_1 = __importDefault(require("./routes/auth.route"));
-const auth_route_2 = __importDefault(require("./routes/auth.route"));
 const metrics_middleware_1 = require("./middleware/metrics.middleware");
 const PORT = process.env.PORT;
 const app = (0, express_1.default)();
@@ -35,5 +35,5 @@ app.get("/health", (req, res) => {
     });
 });
 app.use("/companies", company_route_1.default);
-app.use("/problems", auth_route_1.default);
-app.use("/auth", auth_route_2.default);
+app.use("/problems", problem_route_1.default);
+app.use("/auth", auth_route_1.default);

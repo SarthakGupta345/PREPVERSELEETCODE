@@ -1,6 +1,4 @@
 import { notFound } from "next/navigation";
-import path from "path";
-import fs from "fs/promises";
 import CompanyDashboard from "@/components/company/CompanyDashboard";
 import type { CompanyData } from "@/constants/comapnyData";
 
@@ -9,21 +7,17 @@ interface PageProps {
 }
 
 async function getCompanyData(companyName: string): Promise<CompanyData | null> {
-    // Sanitize the company name into a valid filename
-    const safeFilename = companyName.replace(/[\/\\?%*:|"<>]/g, "_");
-    const filePath = path.join(
-        process.cwd(),
-        "src",
-        "constants",
-        "data",
-        "companies",
-        `${safeFilename}.json`
-    );
-
     try {
-        const raw = await fs.readFile(filePath, "utf-8");
-        return JSON.parse(raw) as CompanyData;
-    } catch {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:7080";
+        const res = await fetch(`${apiUrl}/companies/${encodeURIComponent(companyName)}`, {
+            cache: "no-store",
+        });
+        if (!res.ok) return null;
+        const json = await res.json();
+        if (json.success) return json.data;
+        return null;
+    } catch (err) {
+        console.error("Error fetching company data:", err);
         return null;
     }
 }

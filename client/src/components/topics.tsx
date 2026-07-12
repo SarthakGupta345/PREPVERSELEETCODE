@@ -1,14 +1,30 @@
 "use client";
 
-import React from "react";
-import globalTopics from "@/constants/data/globalTopics.json";
+import React, { useMemo } from "react";
 import type { GlobalTopic } from "@/constants/problemData";
 import { useFilterStore } from "@/store/filterStore";
-
-const topics = (globalTopics as GlobalTopic[]).slice(0, 20); // Show top 20 topics
+import { useTopics } from "@/hooks/useProblems";
 
 const TopicsSection = () => {
     const { activeTopic, setActiveTopic } = useFilterStore();
+    const { data: apiTopicsResponse } = useTopics();
+
+    const topics = useMemo<GlobalTopic[]>(() => {
+        if (apiTopicsResponse?.success && apiTopicsResponse?.data) {
+            return apiTopicsResponse.data.map((t: any) => ({
+                name: t.name,
+                count: t._count?.problems || 0,
+            })).slice(0, 20);
+        }
+        return [];
+    }, [apiTopicsResponse]);
+
+    const totalTopicsCount = useMemo(() => {
+        if (apiTopicsResponse?.success && apiTopicsResponse?.data) {
+            return apiTopicsResponse.data.length;
+        }
+        return 0;
+    }, [apiTopicsResponse]);
 
     return (
         <section
@@ -29,7 +45,7 @@ const TopicsSection = () => {
                     </h2>
 
                     <p className="mt-1 text-sm text-neutral-500">
-                        {globalTopics.length} unique topics across {" "}
+                        {totalTopicsCount} unique topics across {" "}
                         <span className="font-medium text-[#ffa116]">470 companies</span>
                     </p>
                 </div>

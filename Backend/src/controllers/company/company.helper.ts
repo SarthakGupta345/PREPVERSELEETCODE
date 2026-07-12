@@ -28,8 +28,30 @@ export const problemSelect = {
 } as const;
 
 export const getCompany = async (id: string) => {
-    return prisma.company.findUnique({
+    let company = await prisma.company.findUnique({
         where: { id },
+        select: {
+            id: true,
+            name: true,
+            slug: true,
+            imageUrl: true,
+        },
+    });
+    if (company) return company;
+
+    company = await prisma.company.findUnique({
+        where: { slug: id.toLowerCase() },
+        select: {
+            id: true,
+            name: true,
+            slug: true,
+            imageUrl: true,
+        },
+    });
+    if (company) return company;
+
+    return prisma.company.findUnique({
+        where: { name: id },
         select: {
             id: true,
             name: true,

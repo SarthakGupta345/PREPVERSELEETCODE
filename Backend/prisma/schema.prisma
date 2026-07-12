@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -10,4 +5,125 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum TimePeriod {
+  THIRTY_DAYS
+  THREE_MONTHS
+  SIX_MONTHS
+  MORE_THAN_SIX_MONTHS
+  ALL_TIME
+}
+
+model User {
+  id           String @id @default(cuid())
+  name         String
+  email        String @unique
+  passwordHash String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  solvedProblems SolvedProblem[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model Company {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  slug     String  @unique
+  imageUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyProblems CompanyProblem[]
+
+  @@index([slug])
+  @@map("companies")
+}
+
+model Problem {
+  id          String @id @default(cuid())
+  title       String
+  slug        String @unique
+  description String @db.Text
+
+  difficulty     Difficulty
+  acceptanceRate Float
+  link           String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  topics Topic[]
+
+  companyProblems CompanyProblem[]
+  solvedBy        SolvedProblem[]
+
+  @@index([difficulty])
+  @@index([slug])
+  @@map("problems")
+}
+
+model Topic {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  problems Problem[]
+
+  @@index([slug])
+  @@map("topics")
+}
+
+model CompanyProblem {
+  id String @id @default(cuid())
+
+  companyId String
+  problemId String
+
+  period TimePeriod
+
+  frequency Float @default(0)
+
+  lastSeenAt DateTime?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, problemId, period])
+  @@index([companyId])
+  @@index([problemId])
+  @@index([period])
+  @@index([frequency])
+  @@map("company_problems")
+}
+
+model SolvedProblem {
+  id String @id @default(cuid())
+
+  userId    String
+  problemId String
+
+  solvedAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, problemId])
+  @@index([userId])
+  @@index([problemId])
+  @@map("solved_problems")
 }
